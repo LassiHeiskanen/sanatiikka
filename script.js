@@ -1,6 +1,6 @@
 // ======== SUPABASE ========
-const SUPA_URL = 'https://…supabase.co';
-const SUPA_KEY = 'YOUR_ANON_KEY';
+const SUPA_URL = 'https://avtlhmgppxuwahkxjxbb.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2dGxobWdwcHh1d2Foa3hqeGJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3OTk3NzcsImV4cCI6MjA2MzM3NTc3N30.7V2xSt0pBhIJhj4Z2_CQESJkesaIkr-zrkZmY9CzVXw';
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 // ======== PELILOGIIKKA ========
