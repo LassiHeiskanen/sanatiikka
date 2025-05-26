@@ -4,12 +4,92 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 // ======== PELILOGIIKKA ========
-let wordList = ['omena','kissa','koira', /*… täydennä sanalistasi…*/];
+// script.js
+
+// ======== PELILOGIIKKA ========
+
+// 1) Tyhjä taulukko, täytetään loadWordList():ssä
+let wordList = [];
 let target, count, closestScore;
 let history = [];
 
-const el = id => document.getElementById(id);
-const denorm = s => s.replace(/{/g,'å').replace(/\|/g,'ä').replace(/}/g,'ö');
+// apufunktiot
+const el   = id => document.getElementById(id);
+const denorm = s => s
+  .replace(/{/g, 'å')
+  .replace(/\|/g, 'ä')
+  .replace(/}/g, 'ö');
+
+// 2) Funktio lataa sanalistasi 'words.txt' ja normalisoi
+async function loadWordList() {
+  const res = await fetch('words.txt');
+  if (!res.ok) {
+    throw new Error(`words.txt lataus epäonnistui: ${res.status}`);
+  }
+  const txt = await res.text();
+  wordList = txt
+    .split(/\r?\n/)           // jaetaan riveihin
+    .map(w => w.trim().toLowerCase())
+    .filter(w => w)            // ei-tyhjät rivit
+    .map(w => Normalize(w));   // jos sinulla on Normalize-funktio
+}
+
+// 3) Alustus – kutsutaan vasta kun sanaLista kunnossa
+async function startGame() {
+  try {
+    await loadWordList();
+  } catch (err) {
+    console.error(err);
+    alert('Sanalistaa ei voitu ladata!');
+    return;
+  }
+
+  // Tässä kohtaa wordList on valmis: jatka pelin normaalilla Start-logiikalla
+  initUIBindings();
+  resetGame();
+}
+
+// 4) Esimerkki Normalize-funktiosta (jos käytössä)
+function Normalize(w) {
+  return w
+    .replace(/å/g, '{')
+    .replace(/ä/g, '|')
+    .replace(/ö/g, '}');
+}
+
+// 5) Sitotaan napit ym.
+function initUIBindings() {
+  el('guessInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') tryGuess();
+  });
+  el('newGameBtn').addEventListener('click', resetGame);
+  // ... muut bindingit ...
+}
+
+// 6) Pelin reset
+function resetGame() {
+  count = 0;
+  closestScore = Infinity;
+  history = [];
+  target = pickRandom(wordList);
+  // päivitä UI, piilota/history, nollaa laskurit...
+}
+
+// 7) Kun DOM on valmis, käynnistetään
+window.addEventListener('DOMContentLoaded', startGame);
+
+
+// --- loput pelifunktiot kuten tryGuess(), pickRandom() jne. ---
+function pickRandom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function tryGuess() {
+  const raw = el('guessInput').value.trim().toLowerCase();
+  const guess = Normalize(raw);
+  // ... validointi ja pelilogiikka ...
+}
+
 
 // resettaa pelin tilan
 function startGame() {
