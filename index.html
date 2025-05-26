@@ -5,11 +5,51 @@
   <title>Sanatiikka</title>
   <style>
     body { font-family: sans-serif; max-width: 400px; margin: auto; padding: 1em; }
-    #letters { display: flex; gap: .5em; margin: 1em 0; }
-    #letters span { width: 2em; text-align: center; font-size: 2em; border-bottom: 2px solid #333; }
-    button, input { font-size: 1em; padding: .5em; }
-    #history { white-space: pre; margin-top: 1em; }
-    #top5 { white-space: pre; margin-top: 1em; font-weight: bold; }
+    #gameContainer {
+      display: flex;
+      align-items: flex-start;
+      gap: 1em;
+    }
+    #gamePlayfield {
+      flex: 1;
+    }
+    #gameHistory {
+      width: 150px;
+    }
+    #gameHistory h4 {
+      margin: 0 0 .5em 0;
+    }
+    #letters {
+      display: flex;
+      gap: .5em;
+      margin: 1em 0;
+    }
+    #letters span {
+      width: 2em;
+      text-align: center;
+      font-size: 2em;
+      border-bottom: 2px solid #333;
+    }
+    #controls {
+      display: flex;
+      gap: .5em;
+      margin: .5em 0;
+    }
+    button, input {
+      font-size: 1em;
+      padding: .5em;
+    }
+    #info {
+      margin-top: 1em;
+    }
+    #history {
+      white-space: pre;
+    }
+    #top5 {
+      white-space: pre;
+      margin-top: 1em;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -25,17 +65,31 @@
   </div>
 
   <div id="game" style="display:none">
-    <div id="letters"></div>
-    <input id="guess" placeholder="Kirjoita arvaus" maxlength="7">
-    <button id="submit">Arvaa</button>
-    <button id="hint">Vihje</button>
-    <button id="reveal">Näytä sana</button>
+    <div id="gameContainer">
+      <!-- Vasen palsta: peli -->
+      <div id="gamePlayfield">
+        <div id="letters"></div>
 
-    <div id="result"></div>
-    <div id="history"></div>
-    <div id="count"></div>
-    <div id="closest"></div>
-   
+        <div id="controls">
+          <input id="guess" placeholder="Kirjoita arvaus" maxlength="7">
+          <button id="submit">Arvaa</button>
+          <button id="hint">Vihje</button>
+          <button id="reveal">Näytä sana</button>
+        </div>
+
+        <div id="info">
+          <div id="result"></div>
+          <div id="count"></div>
+          <div id="closest"></div>
+        </div>
+      </div>
+
+      <!-- Oikea palsta: historia -->
+      <div id="gameHistory">
+        <h4>Arvatut sanat</h4>
+        <div id="history"></div>
+      </div>
+    </div>
   </div>
 
   <div id="top5"></div>
@@ -43,6 +97,5 @@
   <!-- Supabase JS (via CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
   <script src="script.js"></script>
-
 </body>
 </html>
