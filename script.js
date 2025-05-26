@@ -6,7 +6,7 @@ const supa     = supabase.createClient(SUPA_URL, SUPA_KEY);
 // ======== PELILOGIIKKA ========
 
 // muuttujat
-let wordList    = [];
+let wordList = [], target, count, closestScore, history = [];
 let target, count, closestScore;
 let history     = [];
 
@@ -19,19 +19,19 @@ const Normalize = w => w.replace(/å/g,'{').replace(/ä/g,'|').replace(/ö/g,'}'
 async function startGame() {
   try {
     const res = await fetch('sanat_uusi.txt');
-    if (!res.ok) throw new Error(`sanat_uusi.txt lataus epäonnistui: ${res.status}`);
+    if (!res.ok) throw new Error(`Sanalistan haku epäonnistui: ${res.status}`);
     const txt = await res.text();
     wordList = txt
       .split(/\r?\n/)
       .map(w => w.trim().toLowerCase())
-      .filter(w => w)
-      .map(w => Normalize(w));
-  } catch (err) {
-    console.error(err);
+      .filter(w => w);
+  } catch (e) {
+    console.error(e);
     alert('Sanalistaa ei voitu ladata!');
     return;
   }
 
+  // Kun sanalista on ladattu, sidotaan UI-tapahtumat ja käynnistetään peli
   initUIBindings();
   resetGame();
 }
