@@ -47,7 +47,7 @@ function beginGame() {
   target = denorm( candidates[Math.floor(Math.random()*candidates.length)] ).toUpperCase();
   count = 0; closestScore = Infinity; history = [];
   el('game').style.display   = '';
-  el('letters').textContent   = ' _ '.repeat(target.length);
+  el('letters').textContent = '_ '.repeat(target.length).trim();
   el('history').textContent   = '';
   el('result').textContent    = '';
   el('closest').textContent   = '';
