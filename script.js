@@ -1,129 +1,92 @@
 // ======== SUPABASE ========
 const SUPA_URL = 'https://avtlhmgppxuwahkxjxbb.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2dGxobWdwcHh1d2Foa3hqeGJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3OTk3NzcsImV4cCI6MjA2MzM3NTc3N30.7V2xSt0pBhIJhj4Z2_CQESJkesaIkr-zrkZmY9CzVXw';
-const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
-
-// ======== PELILOGIIKKA ========
-// script.js
+const supa     = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 // ======== PELILOGIIKKA ========
 
-// 1) Tyhjä taulukko, täytetään loadWordList():ssä
-let wordList = [];
+// muuttujat
+let wordList    = [];
 let target, count, closestScore;
-let history = [];
+let history     = [];
 
 // apufunktiot
-const el   = id => document.getElementById(id);
-const denorm = s => s
-  .replace(/{/g, 'å')
-  .replace(/\|/g, 'ä')
-  .replace(/}/g, 'ö');
+const el    = id => document.getElementById(id);
+const denorm  = s => s.replace(/{/g,'å').replace(/\|/g,'ä').replace(/}/g,'ö');
+const Normalize = w => w.replace(/å/g,'{').replace(/ä/g,'|').replace(/ö/g,'}');
 
-// 2) Funktio lataa sanalistasi 'sanat_uusi.txt' ja normalisoi
-async function loadWordList() {
-  const res = await fetch('words.txt');
-  if (!res.ok) {
-    throw new Error(`words.txt lataus epäonnistui: ${res.status}`);
-  }
-  const txt = await res.text();
-  wordList = txt
-    .split(/\r?\n/)           // jaetaan riveihin
-    .map(w => w.trim().toLowerCase())
-    .filter(w => w)            // ei-tyhjät rivit
-    .map(w => Normalize(w));   // jos sinulla on Normalize-funktio
-}
-
-// 3) Alustus – kutsutaan vasta kun sanaLista kunnossa
+// 1) Lataa sanalista ennen UI:n kytkentöjä
 async function startGame() {
   try {
-    await loadWordList();
+    const res = await fetch('sanat_uusi.txt');
+    if (!res.ok) throw new Error(`words.txt lataus epäonnistui: ${res.status}`);
+    const txt = await res.text();
+    wordList = txt
+      .split(/\r?\n/)
+      .map(w => w.trim().toLowerCase())
+      .filter(w => w)
+      .map(w => Normalize(w));
   } catch (err) {
     console.error(err);
     alert('Sanalistaa ei voitu ladata!');
     return;
   }
 
-  // Tässä kohtaa wordList on valmis: jatka pelin normaalilla Start-logiikalla
   initUIBindings();
   resetGame();
 }
 
-// 4) Esimerkki Normalize-funktiosta (jos käytössä)
-function Normalize(w) {
-  return w
-    .replace(/å/g, '{')
-    .replace(/ä/g, '|')
-    .replace(/ö/g, '}');
+// 2) Tämä käynnistää itse pelin (UI näkyviin, valitsee targetin)
+function beginGame() {
+  const len = +el('length').value;
+  const candidates = wordList.filter(w=> w.length===len);
+  if (candidates.length===0) {
+    alert('Valitun pituisia sanoja ei löytynyt.');
+    return;
+  }
+  target = denorm( candidates[Math.floor(Math.random()*candidates.length)] ).toUpperCase();
+  count = 0; closestScore = Infinity; history = [];
+  el('game').style.display   = '';
+  el('letters').textContent   = '_'.repeat(target.length);
+  el('history').textContent   = '';
+  el('result').textContent    = '';
+  el('closest').textContent   = '';
+  el('count').textContent     = '';
+  el('report').style.display  = 'none';
+  el('top5').textContent      = '';
 }
 
-// 5) Sitotaan napit ym.
-function initUIBindings() {
-  el('guessInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') tryGuess();
-  });
-  el('newGameBtn').addEventListener('click', resetGame);
-  // ... muut bindingit ...
-}
-
-// 6) Pelin reset
-function resetGame() {
-  count = 0;
-  closestScore = Infinity;
-  history = [];
-  target = pickRandom(wordList);
-  // päivitä UI, piilota/history, nollaa laskurit...
-}
-
-// 7) Kun DOM on valmis, käynnistetään
+// 3) Kun DOM on valmis, aloitetaan sanalistan lataus
 window.addEventListener('DOMContentLoaded', startGame);
 
-
-// --- loput pelifunktiot kuten tryGuess(), pickRandom() jne. ---
-function pickRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+// 4) Kytke nappien tapahtumat
+function initUIBindings() {
+  el('start').onclick     = beginGame;
+  el('submit').onclick    = submitGuess;
+  el('hint').onclick      = giveHint;
+  el('reveal').onclick    = reveal;
+  
+  el('showTop5').onclick  = fetchTop5;
 }
 
-function tryGuess() {
-  const raw = el('guessInput').value.trim().toLowerCase();
-  const guess = Normalize(raw);
-  // ... validointi ja pelilogiikka ...
-}
-
-
-// resettaa pelin tilan
-function startGame() {
-  const len = +el('length').value;
-  target = denorm(wordList.filter(w=>w.length===len)[Math.floor(Math.random()*len)].toUpperCase());
-  count = 0; closestScore = Infinity; history = [];
-  el('game').style.display = '';
-  el('letters').textContent = '_'.repeat(target.length);
-  el('history').textContent = '';
-  el('result').textContent = '';
-  el('closest').textContent = '';
-  el('count').textContent = '';
-  el('report').style.display = 'none';
-  el('top5').textContent = '';
-}
-
-// arvaa
+// 5) Kun pelaaja yrittää arvata
 async function submitGuess() {
-  const g = el('guess').value.trim().toUpperCase();
-  if (!wordList.includes(g.toLowerCase())) { el('result').textContent = 'Tuntematon sana!'; return; }
-  if (g.length!==target.length)  { el('result').textContent = 'Väärä pituus!'; return; }
+  const raw = el('guess').value.trim().toUpperCase();
+  if (!wordList.includes(raw.toLowerCase()))  { el('result').textContent = 'Tuntematon sana!'; return; }
+  if (raw.length!==target.length)            { el('result').textContent = 'Väärä pituus!'; return; }
 
   count++;
-  let score = [...g].reduce((s,c,i)=> s + Math.abs(c.charCodeAt(0)-target[i].charCodeAt(0)), 0);
+  const score = [...raw].reduce((s,c,i)=> s + Math.abs(c.charCodeAt(0)-target[i].charCodeAt(0)), 0);
   el('result').textContent = `Etäisyys: ${score}`;
-  history.push(`${g} (${score})`);
+  history.push(`${raw} (${score})`);
   el('history').textContent = history.join('\n');
   el('count').textContent   = `Arvauksia: ${count}`;
 
-  if (score<closestScore) {
+  if (score < closestScore) {
     closestScore = score;
-    el('closest').textContent = `Lähin sana: ${g} (${score})`;
+    el('closest').textContent = `Lähin sana: ${raw} (${score})`;
   }
-  if (score===0) {
+  if (score === 0) {
     el('reveal').disabled = true;
     el('report').style.display = '';
     await saveScore(count);
@@ -131,35 +94,34 @@ async function submitGuess() {
   }
 }
 
-// vihje
-function giveHint(){
-  const i = history.length; 
-  if (i<target.length) {
-    let arr = el('letters').textContent.split('');
+// 6) Vihje – paljasta yksi kirjain
+function giveHint() {
+  const i = history.length;
+  if (i < target.length) {
+    const arr = el('letters').textContent.split('');
     arr[i] = target[i];
     el('letters').textContent = arr.join('');
   }
 }
 
-// paljasta sana
-function reveal(){
+// 7) Paljasta koko sana
+function reveal() {
   el('result').textContent = `Oikea sana: ${target}`;
   el('report').style.display = '';
 }
 
-// supabaseen tallennus
-async function saveScore(score){
+// 8) Tallenna tulos Supabaseen
+async function saveScore(score) {
   await supa
     .from('leaderboard')
     .insert([{ date: new Date().toISOString().slice(0,10),
                length: target.length,
-               name: 'XXX',   // voit kysyä nimimerkin erikseen
+               name: 'XXX',  // tähän voit lisätä nimikentän
                score }]);
 }
 
-// hae TOP5 viikolta
-async function fetchTop5(){
-  // laske viikon alku
+// 9) Hae viikon TOP5
+async function fetchTop5() {
   const now = new Date(), d = now.getDay(), diff = (d+6)%7;
   const mon = new Date(now - diff*864e5).toISOString().slice(0,10);
   let { data, error } = await supa
@@ -175,19 +137,4 @@ async function fetchTop5(){
       data.map((e,i)=>`${i+1}. ${e.name} - ${e.score}`).join('\n');
   }
 }
-
-// raportoi sana
-function reportWord(){
-  el('reportMsg').textContent =
-    'Kiitos, asia käsitellään sanojen arviointilautakunnassa kuukausikokouksen yhteydessä.';
-  supa.from('reports').insert([{ word: target, date: new Date().toISOString() }]);
-}
-
-// ======== SITOMINEN ========
-el('start').onclick   = startGame;
-el('submit').onclick  = submitGuess;
-el('hint').onclick    = giveHint;
-el('reveal').onclick  = reveal;
-el('report').onclick  = reportWord;
-el('showTop5').onclick= fetchTop5;  // jos haluat erillisen napin
 
