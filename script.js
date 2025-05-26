@@ -20,7 +20,7 @@ const denorm = s => s
   .replace(/\|/g, 'ä')
   .replace(/}/g, 'ö');
 
-// 2) Funktio lataa sanalistasi 'words.txt' ja normalisoi
+// 2) Funktio lataa sanalistasi 'sanat_uusi.txt' ja normalisoi
 async function loadWordList() {
   const res = await fetch('words.txt');
   if (!res.ok) {
