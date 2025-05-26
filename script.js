@@ -29,8 +29,10 @@ async function startGame() {
 
   // Kun sanalista on ladattu, sidotaan UI-tapahtumat ja käynnistetään peli
   initUIBindings();
-  resetGame();
+  beginGame();
 }
+
+
 
 // 2) UI-sidonnat ja pelin alustus
 function initUIBindings() {
