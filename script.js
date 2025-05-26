@@ -137,4 +137,5 @@ async function fetchTop5() {
       data.map((e,i)=>`${i+1}. ${e.name} - ${e.score}`).join('\n');
   }
 }
+}
 
