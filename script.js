@@ -35,7 +35,7 @@ async function startGame() {
   initUIBindings();
   resetGame();
 }
-
+ 
 // 2) Tämä käynnistää itse pelin (UI näkyviin, valitsee targetin)
 function beginGame() {
   const len = +el('length').value;
